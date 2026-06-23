@@ -66,7 +66,9 @@ energy_plot <- ggplot(
       "<br>Average energy:", round(average_energy, 3)
     )
   )
-) + geom_line(linewidth = 0.8) + geom_point(size = 1.5) +
+) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 1.5) +
   labs(
     title = "Average Energy of Billboard Summer Hits Over Time",
     x = "Year",
@@ -76,18 +78,30 @@ energy_plot <- ggplot(
 ggplotly(energy_plot, tooltip = "text")
 ```
 
-This line graph shows how the average energy of Billboard summer hit songs changed from 1958 to 2017. The average energy appears to increase over time, although there are some decreases in certain years. Earlier years, especially from the late 1950s through the 1970s, generally have lower average energy scores, while many years after the 1980s have higher average energy scores. This chart is interactive, so the reader can hover over each year to see the exact average energy value. This gives the reader more detail than a static chart because they can explore specific years instead of only seeing the overall trend.
+This line graph shows how the average energy of Billboard summer hit songs changed from 1958 to 2017. The average energy appears to increase over time with some decreases at some years. In the earlier years especially the late 1950s through the 1970s, the songs generally have lower average energy scores, while many years after the 1980s have higher average energy scores. This chart is interactive, so the reader can hover over each year to see the exact average energy value. This gives the reader more detail than a static chart because they can explore specific years instead of only seeing the overall trend.
 
 ### Visualization 2
 
 
-```{r visualization-2}
-ggplot(billboard_hits, aes(x = danceability, y = valence)) + geom_point(alpha = 0.6) + geom_smooth(method = "lm", se = FALSE) +
+```{r visualization-2, fig.alt="Scatterplot showing the relationship between danceability and valence for Billboard summer hits. Each point represents one song, and the dashed trend line shows a positive relationship."}
+ggplot(billboard_hits, aes(x = danceability, y = valence)) +
+  geom_point(
+    alpha = 0.6,
+    color = viridis(1, option = "D", begin = 0.55)
+  ) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE,
+    color = "black",
+    linetype = "dashed",
+    linewidth = 0.9
+  ) +
   labs(
     title = "Danceability and Valence of Billboard Summer Hits",
+    subtitle = "More danceable songs often have a more positive sound",
     x = "Danceability",
     y = "Valence"
-  )
+  ) + theme_minimal()
 ```
 
 This scatterplot compares the danceability and valence for songs. The upward trend line suggests a positive relationship between the two variables. Songs with higher danceability often have higher valence which means they tend to sound more positive or upbeat. However, since the points are still spread out, danceability does not perfectly predict how positive songs sound.
@@ -95,26 +109,30 @@ This scatterplot compares the danceability and valence for songs. The upward tre
 ### Visualization 3
 
 
-```{r visualization-3}
-billboard_hits <- billboard_hits %>%
-  mutate(decade = paste0(floor(year / 10) * 10, "s"))
-
-ggplot(billboard_hits, aes(x = decade, y = danceability)) + geom_boxplot() +
+```{r visualization-3, fig.alt="Boxplots comparing danceability scores for Billboard summer hits by decade. The chart shows that more recent decades generally have higher median danceability scores than earlier decades."}
+billboard_hits %>%
+  mutate(
+    decade = factor(
+      paste0(floor(year / 10) * 10, "s"),
+      levels = paste0(seq(1950, 2010, by = 10), "s")
+    )
+  ) %>%
+  ggplot(aes(x = decade, y = danceability, fill = decade)) +
+  geom_boxplot(alpha = 0.85, outlier.alpha = 0.5) +
+  scale_fill_viridis_d(option = "D", guide = "none") +
   labs(
     title = "Danceability of Billboard Summer Hits by Decade",
+    subtitle = "Danceability tends to be higher in more recent decades",
     x = "Decade",
     y = "Danceability"
-  )
-
+  ) + theme_minimal()
 ```
 
 This boxplot shows the distribution of danceability scores for Billboard summer hits across different decades. The median danceability appears to increase from the 1950s and 1960s into the 1990s, 2000s, and 2010s. This suggests that more recent summer hits were more danceable than earlier summer hits. The chart also shows variation within each decade, meaning not every song from a decade follows the same pattern.
 
-### Conclusion
+### Conclusion and discussion
 
 Overall, the Billboard summer hits dataset shows that popular summer songs changed over time in many different ways. The first visualization suggests that the average energy of summer hits increased from 1958 to 2017. The second visualization shows a positive relationship between danceability and valence, meaning more danceable songs often sound more positive or upbeat. The third visualization shows that danceability tended to be higher in more recent decades than in earlier decades. Together, these visualizations suggest that Billboard summer hits have generally become more energetic and danceable over time.
-
-### Report Discussion
 
 I planned to create three charts that would explain how the sound of Billboard summer hits changed over time. The first chart I planned was a line graph showing the average energy of songs by year because a line graph is useful for showing trends over time. The second chart I planned was a scatterplot comparing danceability and valence because I wanted to see whether more danceable songs also tended to sound more positive or upbeat. The third chart I planned was a boxplot showing danceability by decade because this made it easier to compare the distribution of scores across different time periods. 
 
