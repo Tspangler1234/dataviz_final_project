@@ -1,5 +1,6 @@
 ---
-title: "Mini-Project 02"
+title: "Project 02: Florida Elementary School Drive Times"
+author: "Thomas Spangler"
 output: 
   html_document:
     keep_md: true
@@ -9,4 +10,231 @@ output:
 
 # Data Visualization Project 02
 
-_revised version of mini-project 02 goes here_
+## Dataset
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(plotly)
+library(sf)
+library(viridis)
+
+drive_times <- read_csv("../data/drive_times_elementary_12_18.csv", col_types = cols())
+```
+
+The data set used is drive_times_elementary_12_18.csv. This dataset was downloaded from the GitHub data repository provided for the class and saved in the data/ folder of this project. I chose this dataset because it includes drive time, commute distance, and location information for Florida elementary school routes.
+
+```{r data-overview}
+str(drive_times)
+
+nrow(drive_times)
+
+ncol(drive_times)
+
+names(drive_times)
+```
+
+The data overview shows that the dataset contains 1,713 rows and 26 columns. Each row represents a route between elementary schools. The structure output shows that the dataset includes school names, counties, latitude and longitude, drive time, and commute distance. These variables make the dataset useful for studying how distance and location are related to travel time.
+
+```{r missing-values}
+colSums(is.na(drive_times))
+```
+
+The missing-value check shows that every variable has 0 missing values. This means the dataset does not have missing data that needs to be removed or filled in before making the visualizations. This is helpful because the drive time, commute distance, latitude, and longitude variables can be used directly for the charts, map, and model.
+
+```{r numeric-summary}
+drive_times %>%
+  select(drive_time, commute_dist, fromlat, fromlon, tolat, tolon) %>%
+  summary()
+```
+The data summary shows that drive_time ranges from 0.35 to 125.02 with an average of 49.89. The commute_dist variable ranges from 0 to 116.46, with an average of 41.51. This suggests that most routes are moderate in distance and time but some routes are much longer than others.
+
+```{r county-summary}
+county_summary <- drive_times %>% group_by(from_county) %>%
+  summarize(
+    number_of_routes = n(),
+    average_drive_time = mean(drive_time, na.rm = TRUE),
+    average_commute_distance = mean(commute_dist, na.rm = TRUE)
+  ) %>% arrange(desc(number_of_routes))
+head(county_summary, 10)
+```
+
+This table summarizes the dataset by starting county. The counties with the most routes in this dataset include Alachua, Lake, and Marion, each with 52 routes. Among the counties shown, Highlands has one of the highest average drive times and average commute distances, while Lake has a lower average commute distance. This summary helps show that drive times and distances vary by county.
+
+## Visualization 1: Interactive Plot
+
+
+```{r}
+drive_times %>%
+  summarize(
+    average_drive_time = mean(drive_time),
+    average_commute_distance = mean(commute_dist),
+    correlation = cor(drive_time, commute_dist)
+  )
+```
+
+This summary shows that commute distance and drive time have a strong positive relationship. This supports the decision to use scatterplots and a linear model because these methods are useful for comparing two numeric variables.
+
+
+```{r interactive-plot, message=FALSE, warning=FALSE, fig.alt="Interactive scatterplot showing the relationship between average commute distance and average drive time by starting county in Florida. Larger points represent counties with more routes."}
+county_interactive <- drive_times %>%
+  group_by(from_county) %>%
+  summarize(
+    number_of_routes = n(),
+    average_drive_time = mean(drive_time, na.rm = TRUE),
+    average_commute_distance = mean(commute_dist, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+county_drive_time_plot <- ggplot(
+  data = county_interactive,
+  aes(
+    x = average_commute_distance,
+    y = average_drive_time,
+    size = number_of_routes,
+    text = paste(
+      "County:", from_county,
+      "<br>Number of routes:", number_of_routes,
+      "<br>Average commute distance:", round(average_commute_distance, 2),
+      "<br>Average drive time:", round(average_drive_time, 2)
+    )
+  )
+) +
+  geom_point(alpha = 0.7) +
+  scale_size_continuous(range = c(2, 8), guide = "none") +
+  labs(
+    title = "Average Drive Time by Average Commute Distance",
+    subtitle = "Each point represents a starting county",
+    x = "Average Commute Distance",
+    y = "Average Drive Time",
+    caption = "Data source: GitHub dataset repository provided for class"
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank()
+  )
+
+interactive_plot <- ggplotly(county_drive_time_plot, tooltip = "text")
+
+interactive_plot
+
+htmlwidgets::saveWidget(
+  interactive_plot,
+  file = "interactive_drive_time_plot.html",
+  selfcontained = TRUE
+)
+```
+
+This interactive scatterplot compares average commute distance and average drive time by starting county. Each point represents a county summary instead of one individual route. The plot shows a positive relationship, meaning that counties with longer average commute distances usually have longer average drive times. The interactive hover labels make the plot more useful because the viewer can inspect each county and see the number of routes, average commute distance, and average drive time.
+
+## Visualization 2: Spatial Visualization
+
+```{r spatial-visualization, fig.alt="Map of Florida showing starting school locations across counties. County boundaries are shown in light gray and school locations are shown as points."}
+fl_counties <- st_read("../data/fl_counties/cb_2023_us_county_500k.shp",
+  quiet = TRUE
+) %>%
+  filter(STUSPS == "FL") %>%
+  st_transform(4326)
+
+school_points <- drive_times %>%
+  distinct(fromschool, from_county, fromlat, fromlon, .keep_all = TRUE) %>%
+  st_as_sf(coords = c("fromlon", "fromlat"), crs = 4326)
+
+ggplot() + geom_sf(data = fl_counties, fill = "gray95", color = "white") +
+  geom_sf(
+    data = school_points,
+    alpha = 0.6,
+    size = 1.2,
+    color = viridis(1, option = "D", begin = 0.6)
+  ) +
+  labs(
+    title = "Starting School Locations Across Florida",
+    subtitle = "Florida county shapefile with starting school locations",
+    caption = "County boundaries: U.S. Census Bureau cartographic boundary shapefile. School data: class GitHub dataset."
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank()
+  )
+```
+
+This spatial visualization maps the starting school locations using latitude and longitude over a Florida county shapefile. Each point represents a starting school location from the dataset, while the county boundaries provide geographic context. The map shows that the data includes schools across many parts of Florida. This visualization is useful because it uses both the route location data and a shapefile to show the geographic distribution of the school routes.
+
+## Visualization 3: Model Visualization
+
+```{r model-visualization, message=FALSE, fig.alt="Scatterplot showing binned average drive time by commute distance with a linear model trend line. The chart shows that longer commute distances are associated with longer drive times."}
+drive_times_binned <- drive_times %>% mutate(distance_bin = floor(commute_dist / 5) * 5) %>% group_by(distance_bin) %>%
+  summarize(
+    average_commute_distance = mean(commute_dist, na.rm = TRUE),
+    average_drive_time = mean(drive_time, na.rm = TRUE),
+    number_of_routes = n(),
+    .groups = "drop"
+  )
+
+ggplot() +
+  geom_smooth(
+  data = drive_times,
+  aes(x = commute_dist, y = drive_time),
+  method = "lm",
+  se = TRUE,
+  color = "black",
+  linetype = "dashed"
+) +
+geom_point(
+  data = drive_times_binned,
+  aes(
+    x = average_commute_distance,
+    y = average_drive_time,
+    size = number_of_routes
+  ),
+  alpha = 0.75,
+  color = viridis(1, option = "D", begin = 0.6)
+) +
+  scale_size_continuous(range = c(2, 8), guide = "none") +
+  annotate(
+    "label",
+    x = 5,
+    y = 115,
+    label = "Binned points reduce clutter\nwhile the model line shows the trend",
+    hjust = 0
+  ) +
+  labs(
+    title = "Modeling Drive Time by Commute Distance",
+    subtitle = "Binned averages with a linear model fit using the full dataset",
+    x = "Commute Distance",
+    y = "Drive Time",
+    caption = "Data source: GitHub dataset repository provided for class"
+  ) +
+  theme_bw() +
+  theme(
+    plot.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank()
+  )
+```
+
+This model visualization shows the relationship between commute distance and drive time. The points are summarized into commute distance groups to make the plot easier to read, while the linear model line is still based on the full dataset. The upward trend shows that longer commute distances are generally associated with longer drive times. The annotation highlights the main pattern in the plot and helps guide the viewer toward the most important takeaway.
+
+```{r model-summary}
+drive_time_model <- lm(drive_time ~ commute_dist, data = drive_times)
+
+summary(drive_time_model)
+```
+The linear model uses commute distance to predict drive time. The model output shows that commute distance is a strong predictor of drive time. The coefficient for commute distance is about 1.06, meaning that for each additional unit of commute distance, the predicted drive time increases by about 1.06 units. The p-value is very small, which suggests that this relationship is statistically significant. The R-squared value is 0.9225, meaning that the model explains about 92% of the variation in drive time. This supports the visual pattern shown in the model plot.
+
+## Conclusion
+
+Overall, the visualizations show a clear relationship between commute distance and drive time for Florida elementary school routes. The interactive scatterplot shows that counties with longer average commute distances generally have longer average drive times. The model visualization confirms this relationship with a strong upward trend, while using summarized points to make the plot easier to read. The spatial map adds geographic context by showing that the dataset includes schools across many parts of Florida. Based on the model results, commute distance is a strong predictor of drive time in this dataset.
+
+
+## Report Discussion
+
+The three visualizations were created to explain how distance and location are related to drive times between Florida elementary schools.
+
+The first visualization was an interactive scatterplot comparing average commute distance and average drive time by starting county. This plot was chosen because scatterplots are useful for showing relationships between two numeric variables. I used county summaries instead of every individual route to reduce clutter and make the overall pattern easier to read. The interactive hover labels still allow the viewer to inspect each county’s number of routes, average commute distance, and average drive time.
+
+The second visualization was a spatial map using latitude and longitude to show the starting school locations across Florida. A map was appropriate because the dataset includes geographic coordinates. I chose to map the school locations instead of drawing every route because showing every route could make the map too crowded and harder to interpret.
+
+The third visualization used a linear model to show the relationship between commute distance and drive time. The plotted points were summarized into commute-distance groups to make the graph easier to read, while the linear model line was still based on the full dataset. I added an annotation to highlight the main takeaway: longer commute distances usually have longer drive times.
+
+The main story shown by the visualizations is that commute distance is strongly related to drive time. The county-level interactive plot and the model visualization both show a strong upward pattern, while the spatial map adds geographic context by showing that the routes come from many parts of Florida. One difficulty was deciding how much geographic information to show, so I simplified the map to focus on school locations rather than trying to show every route.
