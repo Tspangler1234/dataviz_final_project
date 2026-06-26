@@ -35,4 +35,4 @@ In this project, I explored Tampa weather data and concrete strength data. The w
 
 ### Moving Forward
 
-Overall, these projects helped me better understand how data, design, and explanation work together. Moving forward, I would focus on making my visualizations clearer, more accessible, and more useful for readers.
+Overall, this course helped me become more thoughtful about how data, design, and explanation work together to make visualizations clearer and more useful. Moving forward, I would continue using what I learned in this course about data storytelling and reproducible research. These projects helped me understand that visualizations should do more than show data, they should help the reader understand a clear pattern or story. I also learned how important it is to choose the right chart type and explain why each design choice supports the data.

@@ -147,7 +147,7 @@ ggplot(billboard_hits, aes(x = danceability, y = valence, color = decade)) +
   theme_classic()
 ```
 
-This chart is a bad version of the danceability and valence scatterplot because the points are large and opaque, which makes overlapping points harder to see. It is also difficult to see any relationships in the chart and it also over relies on the colors.
+This chart is a bad version of the danceability and valence scatterplot because the points are large and opaque, which makes overlapping points harder to see. It is also difficult to see any relationships in the chart and it also over relies on the colors which can lead the person reading it to look back and forward constantly.
 
 ### Redesigned Chart: Danceability and Valence Scatterplot
 
@@ -171,4 +171,4 @@ ggplot(billboard_hits, aes(x = danceability, y = valence, color = decade)) +
   ) + theme_minimal()
 ```
 
-The redesigned version improves the same chart by using smaller transparent points to reduce overplotting. It also adds a dashed trend line to make the overall relationship easier to interpret. The chart does not rely only on color because the x-axis and y-axis positions still show the main comparison.
+The redesigned version improves the same chart by using smaller transparent points to reduce overplotting. It also adds a dashed trend line to make the overall relationship easier to interpret. The chart does not rely on color because the x and y axis still show the main comparison.

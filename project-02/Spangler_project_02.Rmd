@@ -240,7 +240,6 @@ The third visualization used a linear model to show the relationship between com
 The main story shown by the visualizations is that commute distance is strongly related to drive time. The county-level interactive plot and the model visualization both show a strong upward pattern, while the spatial map adds geographic context by showing that the routes come from many parts of Florida. One difficulty was deciding how much geographic information to show, so I simplified the map to focus on school locations rather than trying to show every route.
 
 
-
 ## Bad Chart Redesign
 
 ### Bad Chart: Average Drive Time by Commute Distance
@@ -274,7 +273,7 @@ ggplot(
   theme_classic()
 ```
 
-This chart is a weak version of the drive time and commute distance visualization. The points are large and fully opaque, which makes overlapping counties harder to compare. The red and green color scale is also not very accessible for colorblind readers. The title and axis labels are too vague, and the chart does not include a trend line to help show the overall relationship.
+This chart is a bad version of the drive time and commute distance visualization. The points are large and fully opaque, which makes overlapping counties harder to compare. The title and axis labels are also too vague and the chart does not include a trend line to help show the overall relationship.
 
 ### Redesigned Chart: Average Drive Time by Commute Distance
 
@@ -313,4 +312,4 @@ ggplot(
   )
 ```
 
-The redesigned chart improves the same visualization by using clearer labels, transparent points, and a more accessible color choice. Point size still shows the number of routes, while the dashed trend line makes the overall relationship between commute distance and drive time easier to understand. The chart also avoids relying only on color because the main relationship is shown through x-axis and y-axis position.
+The redesigned chart improves the same visualization by using clearer labels, transparent points, and a more accessible color choice. Point size still shows the number of routes, while the dashed trend line makes the overall relationship between commute distance and drive time easier to understand. The chart also avoids relying only on color because the main relationship is shown through x and y axis position.

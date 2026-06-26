@@ -10,11 +10,9 @@ output:
 
 # Data Visualization Project 03
 
-This report focuses on recreating several required visualizations from the final project template. Part 1 uses 2022 weather data from Tampa International Airport to explore distributions of temperature and precipitation. Part 2 uses concrete strength data to examine relationships between concrete ingredients, age, and compressive strength.
+This Project focuses on recreating several required visualizations from a final project template. Part 1 uses 2022 weather data from Tampa International Airport to explore distributions of temperature and precipitation. Part 2 uses concrete strength data to examine relationships between concrete ingredients, age, and compressive strength.
 
 ## PART 1: Density Plots
-
-Using the dataset obtained from FSU's [Florida Climate Center](https://climatecenter.fsu.edu/climate-data-access-tools/downloadable-data), for a station at Tampa International Airport (TPA) for 2022, attempt to recreate the charts shown below which were generated using data from 2016. You can read the 2022 dataset using the code below: 
 
 ```{r setup, message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -48,7 +46,6 @@ ggplot(weather_clean, aes(x = max_temp, fill = month_name)) +
     y = "Number of Days"
   ) + theme_minimal()
 ```
-
 
 This section uses 2022 weather data from Tampa International Airport. The visualizations focus on the distribution of daily maximum temperatures across months, followed by a precipitation chart showing how rainfall totals varied throughout the year.
 
