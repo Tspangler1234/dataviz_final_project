@@ -35,6 +35,4 @@ In this project, I explored Tampa weather data and concrete strength data. The w
 
 ### Moving Forward
 
-Moving forward, I would continue improving these projects by refining the visual design of the charts and adding more interactive features. For Project 01, I could explore more music variables and compare trends across individual artists or genres. For Project 02, I could add more mapping details to better show geographic patterns in drive times across Florida. For Project 03, I could expand the concrete analysis by comparing more ingredients and building a stronger model for predicting concrete strength.
-
-I would also continue improving accessibility by checking color choices, writing clearer alt text, and making sure each visualization can be understood without relying only on color. These improvements would make the reports more useful for a wider audience.
+Overall, these projects helped me better understand how data, design, and explanation work together. Moving forward, I would focus on making my visualizations clearer, more accessible, and more useful for readers.
