@@ -238,3 +238,79 @@ The second visualization was a spatial map using latitude and longitude to show 
 The third visualization used a linear model to show the relationship between commute distance and drive time. The plotted points were summarized into commute-distance groups to make the graph easier to read, while the linear model line was still based on the full dataset. I added an annotation to highlight the main takeaway: longer commute distances usually have longer drive times.
 
 The main story shown by the visualizations is that commute distance is strongly related to drive time. The county-level interactive plot and the model visualization both show a strong upward pattern, while the spatial map adds geographic context by showing that the routes come from many parts of Florida. One difficulty was deciding how much geographic information to show, so I simplified the map to focus on school locations rather than trying to show every route.
+
+
+
+## Bad Chart Redesign
+
+### Bad Chart: Average Drive Time by Commute Distance
+
+```{r project2-bad-drive-time-chart, message=FALSE, warning=FALSE, fig.alt="A poorly designed scatterplot showing average drive time by average commute distance for Florida counties. The chart uses large opaque points, a red-green color scale, and limited explanation, making the pattern harder to interpret."}
+county_drive_redesign <- drive_times %>%
+  group_by(from_county) %>%
+  summarize(
+    number_of_routes = n(),
+    average_drive_time = mean(drive_time, na.rm = TRUE),
+    average_commute_distance = mean(commute_dist, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(
+  county_drive_redesign,
+  aes(
+    x = average_commute_distance,
+    y = average_drive_time,
+    color = number_of_routes,
+    size = number_of_routes
+  )
+) +
+  geom_point(alpha = 1) +
+  scale_color_gradient(low = "red", high = "green") +
+  labs(
+    title = "Drive Time and Distance",
+    x = "Distance",
+    y = "Time"
+  ) +
+  theme_classic()
+```
+
+This chart is a weak version of the drive time and commute distance visualization. The points are large and fully opaque, which makes overlapping counties harder to compare. The red and green color scale is also not very accessible for colorblind readers. The title and axis labels are too vague, and the chart does not include a trend line to help show the overall relationship.
+
+### Redesigned Chart: Average Drive Time by Commute Distance
+
+```{r project2-redesigned-drive-time-chart, message=FALSE, warning=FALSE, fig.alt="Redesigned scatterplot showing average drive time by average commute distance for Florida counties. Transparent points reduce overlap, point size shows number of routes, and a dashed trend line shows the overall relationship."}
+ggplot(
+  county_drive_redesign,
+  aes(
+    x = average_commute_distance,
+    y = average_drive_time,
+    size = number_of_routes
+  )
+) +
+  geom_point(
+    alpha = 0.7,
+    color = viridis(1, option = "D", begin = 0.6)
+  ) +
+  geom_smooth(
+    aes(group = 1),
+    method = "lm",
+    se = FALSE,
+    color = "black",
+    linetype = "dashed"
+  ) +
+  scale_size_continuous(range = c(2, 8), name = "Number of Routes") +
+  labs(
+    title = "Average Drive Time by Average Commute Distance",
+    subtitle = "Each point represents a starting county in the Florida elementary school drive time dataset",
+    x = "Average Commute Distance",
+    y = "Average Drive Time",
+    caption = "Data source: class GitHub dataset"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold"),
+    panel.grid.minor = element_blank()
+  )
+```
+
+The redesigned chart improves the same visualization by using clearer labels, transparent points, and a more accessible color choice. Point size still shows the number of routes, while the dashed trend line makes the overall relationship between commute distance and drive time easier to understand. The chart also avoids relying only on color because the main relationship is shown through x-axis and y-axis position.
