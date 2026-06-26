@@ -274,8 +274,7 @@ cement_strength_plot <- ggplot(
     )
   )
 ) +
-  geom_point(alpha = 0.75) +
-  scale_color_viridis_d(option = "D", name = "Strength Range") + scale_size_continuous(range = c(1.5, 6), name = "Age") +
+  geom_point(alpha = 0.75) + scale_color_viridis_d(option = "D", name = "Strength Range") + scale_size_continuous(range = c(1.5, 6), name = "Age") +
   labs(
     title = "Concrete Strength by Cement Amount",
     subtitle = "Point size represents curing age and color represents strength range",
@@ -286,7 +285,7 @@ cement_strength_plot <- ggplot(
 ggplotly(cement_strength_plot, tooltip = "text")
 ```
 
-This interactive scatterplot shows the relationship between cement amount and concrete compressive strength. In general, higher cement amounts appear to be associated with higher strength values though, the relationship isn't perfectly consistent. The point size adds curing age as another variable, while the color groups observations by strength range. This makes the chart useful for comparing multiple variables at once.
+This interactive scatterplot shows the relationship between cement amount and concrete compressive strength. In general, higher cement amounts appear to be associated with higher strength values though, the relationship isn't consistent. The point size adds curing age as another variable, while the color groups observations by strength range. This makes the chart useful for comparing multiple variables at once.
 
 Overall, the concrete visualizations show that both material amounts and curing age are related to compressive strength. The distribution plots show that cement amount and strength both vary widely across the dataset. The age plot suggests that concrete generally becomes stronger as it cures over time, although there is still variation within each age group. The interactive scatterplot shows that higher cement amounts are often associated with higher strength, while also allowing age and strength range to be compared at the same time.
 

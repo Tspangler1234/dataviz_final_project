@@ -99,8 +99,7 @@ county_drive_time_plot <- ggplot(
     )
   )
 ) +
-  geom_point(alpha = 0.7) +
-  scale_size_continuous(range = c(2, 8), guide = "none") +
+  geom_point(alpha = 0.7) + scale_size_continuous(range = c(2, 8), guide = "none") +
   labs(
     title = "Average Drive Time by Average Commute Distance",
     subtitle = "Each point represents a starting county",
