@@ -131,4 +131,44 @@ I planned to create three charts that would explain how the sound of Billboard s
 
 I applied data visualization and design principles by choosing chart types that matched the kind of data being shown. I used a line graph because time is ordered and the main goal was to show change over time. I used a scatterplot for both variables because they are numeric and the goal was to show the relationship between them. I used a boxplot because it shows the median, spread, and variation within each decade. I also used clear titles and axis labels so the reader could understand what each graph was showing without needing extra explanation. For the scatterplot, I added transparency on the points to reduce overlap and added a trend line to make the overall relationship easier to see.
 
+## Bad Chart Redesign
 
+### Bad Chart: Danceability and Valence Scatterplot
+
+```{r project1-bad-scatter, message=FALSE, warning=FALSE, fig.alt="A poorly designed scatterplot showing danceability and valence for Billboard summer hits. Points are large and opaque, colors are harder to interpret, and the chart does not include a trend line."}
+ggplot(billboard_hits, aes(x = danceability, y = valence, color = decade)) +
+  geom_point(size = 3) +
+  labs(
+    title = "Danceability vs Valence",
+    x = "Danceability",
+    y = "Valence",
+    color = "Decade"
+  ) +
+  theme_classic()
+```
+
+This chart is a bad version of the danceability and valence scatterplot because the points are large and opaque, which makes overlapping points harder to see. It is also difficult to see any relationships in the chart and it also over relies on the colors.
+
+### Redesigned Chart: Danceability and Valence Scatterplot
+
+```{r project1-redesigned-scatter, message=FALSE, warning=FALSE, fig.alt="Redesigned scatterplot showing the relationship between danceability and valence for Billboard summer hits. Transparent points reduce overlap, a colorblind-friendly palette separates decades, and a dashed trend line shows the overall relationship."}
+ggplot(billboard_hits, aes(x = danceability, y = valence, color = decade)) +
+  geom_point(alpha = 0.65, size = 2) +
+  geom_smooth(
+    aes(group = 1),
+    method = "lm",
+    se = FALSE,
+    color = "black",
+    linetype = "dashed"
+  ) +
+  scale_color_viridis_d(option = "D") +
+  labs(
+    title = "Danceability and Valence of Billboard Summer Hits",
+    subtitle = "Transparent points reduce overlap and the trend line shows the overall relationship",
+    x = "Danceability",
+    y = "Valence",
+    color = "Decade"
+  ) + theme_minimal()
+```
+
+The redesigned version improves the same chart by using smaller transparent points to reduce overplotting. It also adds a dashed trend line to make the overall relationship easier to interpret. The chart does not rely only on color because the x-axis and y-axis positions still show the main comparison.

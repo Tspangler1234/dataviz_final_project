@@ -10,29 +10,16 @@ output:
 
 # Data Visualization Project 03
 
-
-In this exercise you will explore methods to create different types of data visualizations (such as plotting text data, or exploring the distributions of continuous variables).
-
+This report focuses on recreating several required visualizations from the final project template. Part 1 uses 2022 weather data from Tampa International Airport to explore distributions of temperature and precipitation. Part 2 uses concrete strength data to examine relationships between concrete ingredients, age, and compressive strength.
 
 ## PART 1: Density Plots
 
 Using the dataset obtained from FSU's [Florida Climate Center](https://climatecenter.fsu.edu/climate-data-access-tools/downloadable-data), for a station at Tampa International Airport (TPA) for 2022, attempt to recreate the charts shown below which were generated using data from 2016. You can read the 2022 dataset using the code below: 
 
-```{r, message=FALSE, warning=FALSE}
+```{r setup, message=FALSE, warning=FALSE}
 library(tidyverse)
-weather_tpa <- read_csv("https://raw.githubusercontent.com/aalhamadani/datasets/master/tpa_weather_2022.csv")
-# random sample 
-sample_n(weather_tpa, 4)
-```
-
-See Slides from Week 4 of Visualizing Relationships and Models (slide 10) for a reminder on how to use this type of dataset with the `lubridate` package for dates and times (example included in the slides uses data from 2016).
-
-Using the 2022 data: 
-
-(a) Create a plot like the one below:
-
-```{r, echo = FALSE, out.width="80%", fig.align='center'}
-knitr::include_graphics("https://raw.githubusercontent.com/aalhamadani/dataviz_final_project/main/figures/tpa_max_temps_facet.png")
+library(ggridges)
+library(plotly)
 
 weather_tpa <- read_csv("../data/tpa_weather_2022.csv", col_types = cols()) %>%
   mutate(
@@ -42,6 +29,13 @@ weather_tpa <- read_csv("../data/tpa_weather_2022.csv", col_types = cols()) %>%
 weather_clean <- weather_tpa %>%
   filter(max_temp != -99.9)
 
+# random sample 
+sample_n(weather_tpa, 4)
+```
+
+
+(a) Histogram
+```{r weather-histogram-facet, message=FALSE, warning=FALSE, fig.alt="Faceted histograms showing the distribution of daily maximum temperatures at Tampa International Airport for each month in 2022. Winter months have lower temperatures, while summer months are concentrated at higher temperatures." }
 ggplot(weather_clean, aes(x = max_temp, fill = month_name)) +
   geom_histogram(
     binwidth = 3,
@@ -55,41 +49,104 @@ ggplot(weather_clean, aes(x = max_temp, fill = month_name)) +
   ) + theme_minimal()
 ```
 
-Hint: the option `binwidth = 3` was used with the `geom_histogram()` function.
 
-(b) Create a plot like the one below:
+This section uses 2022 weather data from Tampa International Airport. The visualizations focus on the distribution of daily maximum temperatures across months, followed by a precipitation chart showing how rainfall totals varied throughout the year.
 
-```{r, echo = FALSE, out.width="80%", fig.align='center'}
-knitr::include_graphics("https://raw.githubusercontent.com/aalhamadani/dataviz_final_project/main/figures/tpa_max_temps_density.png")
+(b) Density plot
+```{r weather-density, message=FALSE, warning=FALSE, fig.alt="Density plot showing the distribution of daily maximum temperatures at Tampa International Airport by month in 2022. Each month is shown as a separate density curve."}
+ggplot(weather_clean, aes(x = max_temp, color = month_name)) +
+  geom_density(
+    kernel = "rectangular",
+    bw = 0.5,
+    linewidth = 0.8
+  ) +
+  scale_color_viridis_d(option = "D", name = "Month") +
+  labs(
+    title = "Density of Daily Maximum Temperatures by Month",
+    subtitle = "Tampa International Airport, 2022",
+    x = "Maximum Temperature (°F)",
+    y = "Density"
+  ) + theme_minimal()
 ```
 
-Hint: check the `kernel` parameter of the `geom_density()` function, and use `bw = 0.5`.
+This density plot shows the distribution of daily maximum temperatures for each month in Tampa during 2022. The monthly curves make it easier to compare the general shape of temperature distributions. Cooler months have density curves farther to the left while summer months are concentrated toward higher maximum temperatures.
 
-(c) Create a plot like the one below:
-
-```{r, echo = FALSE, out.width="80%", fig.align='center'}
-knitr::include_graphics("https://raw.githubusercontent.com/aalhamadani/dataviz_final_project/main/figures/tpa_max_temps_density_facet.png")
+(c) Faceted density plot:
+```{r weather-density-facet, message=FALSE, warning=FALSE, fig.alt="Faceted density plots showing the distribution of daily maximum temperatures at Tampa International Airport for each month in 2022."}
+ggplot(weather_clean, aes(x = max_temp, fill = month_name, color = month_name)) +
+  geom_density(
+    kernel = "rectangular",
+    bw = 0.5,
+    alpha = 0.6,
+    linewidth = 0.6
+  ) +
+  facet_wrap(~ month_name, ncol = 3) +
+  scale_fill_viridis_d(option = "D", guide = "none") + scale_color_viridis_d(option = "D", guide = "none") +
+  labs(
+    title = "Monthly Density of Daily Maximum Temperatures",
+    subtitle = "Tampa International Airport, 2022",
+    x = "Maximum Temperature (°F)",
+    y = "Density"
+  ) + theme_minimal()
 ```
 
-Hint: default options for `geom_density()` were used. 
-
-(d) Generate a plot like the chart below:
+This faceted density plot separates each month into its own panel. This makes the monthly temperature distributions easier to compare because the curves do not overlap as much as they do in the previous density plot. The chart also shows a clear seasonal pattern with cooler distributions in winter and warmer distributions in summer.
 
 
-```{r, echo = FALSE, out.width="80%", fig.align='center'}
-knitr::include_graphics("https://raw.githubusercontent.com/aalhamadani/dataviz_final_project/main/figures/tpa_max_temps_ridges_plasma.png")
+(d) Ridgeline plot:
+
+```{r weather-ridgeline, message=FALSE, warning=FALSE, fig.alt="Ridgeline density plot showing daily maximum temperature distributions by month at Tampa International Airport in 2022. Each month is shown as a horizontal density ridge with quantile lines."}
+ggplot(weather_clean, aes(x = max_temp, y = month_name, fill = month_name)) +
+  geom_density_ridges(
+    quantile_lines = TRUE,
+    quantiles = c(0.25, 0.5, 0.75),
+    alpha = 0.8,
+    scale = 1.2,
+    color = "white"
+  ) + scale_fill_viridis_d(option = "plasma", guide = "none") +
+  labs(
+    title = "Ridgeline Plot of Daily Maximum Temperatures by Month",
+    subtitle = "Tampa International Airport, 2022",
+    x = "Maximum Temperature (°F)",
+    y = "Month"
+  ) + theme_minimal() +
+  theme(
+    panel.grid.major.y = element_blank()
+  )
 ```
 
-Hint: use the`{ggridges}` package, and the `geom_density_ridges()` function paying close attention to the `quantile_lines` and `quantiles` parameters. The plot above uses the `plasma` option (color scale) for the _viridis_ palette.
+This ridgeline plot shows the monthly distributions of daily maximum temperatures in a stacked format. The quantile lines help show where the middle and spread of each month’s temperatures fall. The seasonal pattern shows that the weather is cooler in the winter months and warmer in the summer months.
 
+(e) Monthly precipitation totals
+```{r weather-precipitation, message=FALSE, warning=FALSE, fig.alt="Bar chart showing total monthly precipitation at Tampa International Airport in 2022. Each bar represents the total precipitation for one month after removing missing precipitation values."}
+precip_monthly <- weather_tpa %>%
+  filter(precipitation != -99.99) %>%
+  group_by(month_name) %>%
+  summarize(
+    total_precipitation = sum(precipitation, na.rm = TRUE),
+    rainy_days = sum(precipitation > 0, na.rm = TRUE),
+    .groups = "drop"
+  )
 
-(e) Create a plot of your choice that uses the attribute for precipitation _(values of -99.9 for temperature or -99.99 for precipitation represent missing data)_.
+ggplot(precip_monthly, aes(x = month_name, y = total_precipitation, fill = month_name)) +
+  geom_col(color = "white") +
+  scale_fill_viridis_d(option = "D", guide = "none") +
+  labs(
+    title = "Total Monthly Precipitation in Tampa",
+    subtitle = "Tampa International Airport, 2022",
+    x = "Month",
+    y = "Total Precipitation"
+  ) + theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
 
+This bar chart shows total precipitation for each month in Tampa during 2022. The chart makes it easier to see which months had the most rainfall overall. Compared with the temperature charts, precipitation is less evenly distributed because rainfall can be concentrated in certain months and individual storm events.
 
+Overall, the Part 1 weather visualizations show a clear seasonal pattern in Tampa’s 2022 weather data. Maximum temperatures are lower and more spread out during the winter months, while summer temperatures are more concentrated at higher values. The precipitation chart adds a different view by showing that rainfall is not evenly distributed across the year.
 
-## PART 2 
-
-### Option (B): Data on Concrete Strength 
+## PART 2 Data on Concrete Strength 
 
 Concrete is the most important material in **civil engineering**. The concrete compressive strength is a highly nonlinear function of _age_ and _ingredients_. The dataset used here is from the [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/index.php), and it contains 1030 observations with 9 different attributes 9 (8 quantitative input variables, and 1 quantitative output variable). A data dictionary is included below: 
 
@@ -123,23 +180,118 @@ new_concrete <- concrete %>%
                                                 probs = seq(0, 1, 0.2))) )
 ```
 
+```{r}
+str(concrete)
 
+nrow(concrete)
+ncol(concrete)
+names(concrete)
 
-1. Explore the distribution of 2 of the continuous variables available in the dataset. Do ranges make sense? Comment on your findings.
-
-2. Use a _temporal_ indicator such as the one available in the variable `Age` (measured in days). Generate a plot similar to the one shown below. Comment on your results.
-
-```{r, echo = FALSE, out.width="80%", fig.align='center'}
-knitr::include_graphics("https://raw.githubusercontent.com/aalhamadani/dataviz_final_project/main/figures/concrete_strength.png")
+summary(concrete)
 ```
 
+The concrete dataset contains measurements for concrete ingredients, curing age, and compressive strength. The main response variable is concrete compressive strength, while the other variables describe the material amounts and curing time that may influence the final strength of the concrete.
 
-3. Create a scatterplot similar to the one shown below. Pay special attention to which variables are being mapped to specific aesthetics of the plot. Comment on your results. 
 
-```{r, echo = FALSE, out.width="80%", fig.align='center'}
-knitr::include_graphics("https://raw.githubusercontent.com/aalhamadani/dataviz_final_project/main/figures/cement_plot.png")
+### Distribution of Two Continuous Variables
+
+```{r concrete-distributions, message=FALSE, warning=FALSE, fig.alt="Faceted histograms showing the distributions of cement amount and concrete compressive strength in the concrete dataset."}
+concrete_distribution <- concrete %>%
+  select(Cement, Concrete_compressive_strength) %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = "variable",
+    values_to = "value"
+  )
+
+ggplot(concrete_distribution, aes(x = value)) +
+  geom_histogram(
+    bins = 30,
+    fill = "gray70",
+    color = "white"
+  ) +
+  facet_wrap(~ variable, scales = "free") +
+  labs(
+    title = "Distributions of Cement and Concrete Strength",
+    subtitle = "Two continuous variables from the concrete dataset",
+    x = "Value",
+    y = "Number of Observations"
+  ) + theme_minimal()
 ```
 
+```{r concrete-distribution-ranges}
+concrete %>%
+  summarize(
+    cement_min = min(Cement, na.rm = TRUE),
+    cement_max = max(Cement, na.rm = TRUE),
+    strength_min = min(Concrete_compressive_strength, na.rm = TRUE),
+    strength_max = max(Concrete_compressive_strength, na.rm = TRUE)
+  )
+```
 
+The first histogram shows the distribution of cement amounts used in the concrete mixtures. Cement values vary across a wide range, showing that the dataset includes mixtures with both lower and higher cement content. The second histogram shows the distribution of concrete compressive strength. Strength also varies widely, which makes it useful for exploring how ingredients and curing age may affect the final strength of the concrete.
 
+### Concrete Strength by Age
+
+```{r concrete-strength-age, message=FALSE, warning=FALSE, fig.alt="Boxplots showing concrete compressive strength by curing age. Each boxplot represents the spread of concrete strength values for a different age in days, with color used to separate age groups."}
+ggplot(new_concrete, aes(
+  x = factor(Age),
+  y = Concrete_compressive_strength,
+  fill = factor(Age)
+)) +
+  geom_boxplot(
+    color = "black",
+    alpha = 0.8,
+    show.legend = FALSE
+  ) +
+  scale_fill_viridis_d(option = "D") +
+  labs(
+    title = "Concrete Compressive Strength by Age",
+    subtitle = "Strength values grouped by curing age",
+    x = "Age in Days",
+    y = "Concrete Compressive Strength"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+```
+
+This plot uses age as a time-related variable to compare concrete compressive strength across different curing periods. In general, concrete strength tends to increase as age increases, although there is still variation within each age group. The color helps separate the age groups visually, while the x-axis labels make sure the chart does not rely on color alone.
+
+### Interactive Cement and Concrete Strength Scatterplot
+
+```{r concrete-cement-scatter-interactive, message=FALSE, warning=FALSE, fig.alt="Interactive scatterplot showing the relationship between cement amount and concrete compressive strength. Point size represents curing age and color represents concrete strength range."}
+cement_strength_plot <- ggplot(
+  new_concrete,
+  aes(
+    x = Cement,
+    y = Concrete_compressive_strength,
+    color = strength_range,
+    size = Age,
+    text = paste(
+      "Cement:", Cement,
+      "<br>Strength:", round(Concrete_compressive_strength, 2),
+      "<br>Age:", Age,
+      "<br>Strength range:", strength_range
+    )
+  )
+) +
+  geom_point(alpha = 0.75) +
+  scale_color_viridis_d(option = "D", name = "Strength Range") + scale_size_continuous(range = c(1.5, 6), name = "Age") +
+  labs(
+    title = "Concrete Strength by Cement Amount",
+    subtitle = "Point size represents curing age and color represents strength range",
+    x = "Cement",
+    y = "Concrete Compressive Strength"
+  ) + theme_minimal()
+
+ggplotly(cement_strength_plot, tooltip = "text")
+```
+
+This interactive scatterplot shows the relationship between cement amount and concrete compressive strength. In general, higher cement amounts appear to be associated with higher strength values though, the relationship isn't perfectly consistent. The point size adds curing age as another variable, while the color groups observations by strength range. This makes the chart useful for comparing multiple variables at once.
+
+### Part 2 Summary
+
+Overall, the concrete visualizations show that both material amounts and curing age are related to compressive strength. The distribution plots show that cement amount and strength both vary widely across the dataset. The age plot suggests that concrete generally becomes stronger as it cures over time, although there is still variation within each age group. The interactive scatterplot shows that higher cement amounts are often associated with higher strength, while also allowing age and strength range to be compared at the same time.
 
